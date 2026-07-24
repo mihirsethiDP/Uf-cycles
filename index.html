@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UF Cycles · Configuration · Insights+</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --color-text-primary: #1a1916;
+      --color-text-secondary: #5c5a52;
+      --color-text-tertiary: #9a9890;
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f5f4f0;
+      --color-background-info: #EBF0F7;
+      --color-border-secondary: #d8d6ce;
+      --color-border-tertiary: #eceae2;
+      --border-radius-md: 6px;
+      --border-radius-lg: 10px;
+      --brand-900: #0E1F36;
+      --brand-800: #193458;
+      --brand-700: #2A4A75;
+      --brand-500: #4A6890;
+      --brand-300: #7B92B3;
+      --brand-200: #A8B6CC;
+      --brand-100: #DCE3EE;
+      --brand-50: #EBF0F7;
+      --brand-25: #F5F8FC;
+      --sev-warn-bg: #FBF3E2;
+      --sev-warn-line: #E8D29A;
+      --sev-warn-ink: #6B4E0E;
+      --sev-warn-accent:#B98B1F;
+      --sev-alert-bg: #FBEDE3;
+      --sev-alert-line: #E5B7A0;
+      --sev-alert-ink: #7C2F0E;
+      --sev-alert-accent:#B5491D;
+      --sev-ok-bg: #E8F1E9;
+      --sev-ok-line: #B7D4BA;
+      --sev-ok-ink: #2D5530;
+      --elev-1: 0 1px 2px rgba(14,31,54,0.04);
+      --elev-2: 0 4px 12px rgba(14,31,54,0.06);
+      --elev-3: 0 8px 24px rgba(14,31,54,0.10);
+      --ease-out: cubic-bezier(.16,.84,.32,1);
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: #edeae4;
+      min-height: 100vh;
+      padding: 24px 20px;
+      color: var(--color-text-primary);
+      font-size: 13px;
+    }
+    .app-shell {
+      max-width: 1360px;
+      margin: 0 auto;
+      background: var(--color-background-primary);
+      border-radius: 14px;
+      border: 0.5px solid var(--color-border-secondary);
+      padding: 24px 28px;
+      min-height: 640px;
+    }
+
+    /* Header */
+    .header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 16px; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 20px; flex-wrap: wrap; }
+    .header-left { min-width: 0; flex: 1 1 320px; }
+    .header-left h1 { font-size: 18px; font-weight: 600; color: var(--brand-900); letter-spacing: -.01em; }
+    .header-left .subtitle { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+    .badge-internal { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; background: var(--sev-warn-bg); border: 0.5px solid var(--sev-warn-line); color: var(--sev-warn-ink); font-size: 10.5px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; margin-left: 8px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+    /* Buttons */
+    .btn { height: 32px; padding: 0 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--brand-800); font-size: 12px; font-weight: 500; font-family: var(--font-sans); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .15s var(--ease-out); }
+    .btn:hover { background: var(--brand-50); border-color: var(--brand-200); }
+    .btn-primary { background: var(--brand-800); color: #fff; border-color: var(--brand-800); }
+    .btn-primary:hover { background: var(--brand-700); border-color: var(--brand-700); }
+    .btn-sm { height: 26px; padding: 0 10px; font-size: 11.5px; }
+    .btn-danger { color: var(--sev-alert-ink); border-color: var(--sev-alert-line); background: var(--sev-alert-bg); }
+    .btn-danger:hover { background: #f6dccd; }
+
+    /* Layout */
+    .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 20px; align-items: start; }
+    @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+
+    /* Sidebar (asset list) */
+    .panel { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 14px; }
+    .panel-title { font-size: 11px; font-weight: 600; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+    .asset-list { display: flex; flex-direction: column; gap: 4px; }
+    .asset-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: var(--border-radius-md); cursor: pointer; border: 0.5px solid transparent; transition: all .15s var(--ease-out); }
+    .asset-item:hover { background: var(--brand-25); }
+    .asset-item.active { background: var(--brand-50); border-color: var(--brand-200); }
+    .asset-item.disabled { opacity: .5; cursor: not-allowed; }
+    .asset-name { font-size: 12.5px; font-weight: 500; color: var(--color-text-primary); }
+    .asset-meta { font-size: 10.5px; color: var(--color-text-tertiary); margin-top: 2px; }
+    .auto-pill { font-size: 9.5px; font-weight: 600; padding: 2px 6px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+    .auto-pill.auto { background: var(--sev-ok-bg); color: var(--sev-ok-ink); border: 0.5px solid var(--sev-ok-line); }
+    .auto-pill.cond { background: var(--brand-50); color: var(--brand-800); border: 0.5px solid var(--brand-200); }
+    .auto-pill.off { background: #f1efe9; color: var(--color-text-tertiary); border: 0.5px solid var(--color-border-tertiary); }
+    .auto-pill.manual { background: var(--sev-warn-bg); color: var(--sev-warn-ink); border: 0.5px solid var(--sev-warn-line); }
+
+    /* Main config */
+    .main-col { display: flex; flex-direction: column; gap: 16px; }
+    .section { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 18px; animation: fadeUp .22s var(--ease-out); }
+    .section h2 { font-size: 14px; font-weight: 600; color: var(--brand-900); margin-bottom: 4px; }
+    .section .hint { font-size: 11.5px; color: var(--color-text-secondary); margin-bottom: 14px; line-height: 1.5; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+    .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .field label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); }
+    .field label .req { color: var(--sev-alert-accent); }
+    .input, .select { width: 100%; height: 32px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 0 10px; font-size: 12px; background: #fff; color: var(--color-text-primary); outline: none; font-family: var(--font-sans); transition: border-color .15s var(--ease-out); min-width: 0; }
+    .input:focus, .select:focus { border-color: var(--brand-800); box-shadow: 0 0 0 3px var(--brand-50); }
+    .input.mono { font-family: var(--font-mono); font-size: 11.5px; }
+
+    /* Phase hierarchy */
+    .cycle-tree { display: flex; flex-direction: column; gap: 0; }
+    .main-cycle-block { border: 1px solid var(--brand-200); border-radius: var(--border-radius-lg); background: var(--brand-25); padding: 14px; }
+    .main-cycle-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .main-cycle-header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-700); flex-shrink: 0; }
+    .main-cycle-header .input { flex: 1 1 200px; min-width: 0; }
+    .phases-container { padding-left: 16px; border-left: 2px dashed var(--brand-200); margin-left: 4px; display: flex; flex-direction: column; gap: 10px; }
+    .phase-card { background: #fff; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 12px; position: relative; transition: all .15s var(--ease-out); }
+    .phase-card::before { content: ''; position: absolute; left: -18px; top: 18px; width: 14px; height: 2px; background: var(--brand-200); }
+    .phase-card.expanded { box-shadow: var(--elev-2); border-color: var(--brand-200); }
+    .phase-head { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .phase-idx { width: 22px; height: 22px; border-radius: 50%; background: var(--brand-50); color: var(--brand-800); font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; border: 0.5px solid var(--brand-200); }
+    .phase-name { font-size: 12.5px; font-weight: 500; flex: 1; min-width: 0; color: var(--color-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .phase-meta { display: flex; gap: 6px; align-items: center; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+    .phase-tag { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-secondary); background: var(--color-background-secondary); padding: 2px 6px; border-radius: 4px; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+    .chevron { color: var(--color-text-tertiary); transition: transform .2s var(--ease-out); }
+    .phase-card.expanded .chevron { transform: rotate(180deg); }
+    .phase-body { display: none; margin-top: 12px; padding-top: 12px; border-top: 0.5px dashed var(--color-border-tertiary); }
+    .phase-card.expanded .phase-body { display: flex; flex-direction: column; gap: 12px; animation: fadeIn .2s var(--ease-out); }
+
+    /* Trigger toggle */
+    .seg { display: inline-flex; flex-wrap: wrap; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 2px; gap: 2px; }
+    .seg button { background: transparent; border: 0; padding: 5px 12px; font-size: 11.5px; font-weight: 500; color: var(--color-text-secondary); border-radius: 4px; cursor: pointer; font-family: var(--font-sans); white-space: nowrap; }
+    .seg button.active { background: #fff; color: var(--brand-900); box-shadow: var(--elev-1); }
+
+    /* Manual trigger preview */
+    .manual-block { display: flex; flex-direction: column; gap: 10px; }
+    .manual-preview { background: var(--color-background-secondary); border: 0.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .manual-preview .mp-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+    .manual-buttons { display: flex; gap: 8px; }
+    .manual-btn { padding: 7px 14px; border-radius: var(--border-radius-md); font-size: 12px; font-weight: 500; cursor: not-allowed; font-family: var(--font-sans); display: inline-flex; align-items: center; gap: 6px; }
+    .manual-btn.start { background: var(--sev-ok-bg); color: var(--sev-ok-ink); border: 0.5px solid var(--sev-ok-line); }
+    .manual-btn.stop { background: var(--sev-alert-bg); color: var(--sev-alert-ink); border: 0.5px solid var(--sev-alert-line); }
+    .manual-btn .ic { width: 8px; height: 8px; display: inline-block; border-radius: 1px; }
+    .manual-btn.start .ic { background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+    .manual-btn.stop .ic { background: currentColor; }
+
+    /* Condition rows */
+    .cond-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px 130px; gap: 8px; align-items: end; }
+    @media (max-width: 720px) { .cond-row { grid-template-columns: 1fr; } }
+    .cond-group { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px; }
+    .cond-group-title { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .cond-group-title .pill { font-size: 9.5px; padding: 2px 6px; border-radius: 999px; background: #fff; border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+    /* Inline note */
+    .note { font-size: 11px; color: var(--sev-warn-ink); background: var(--sev-warn-bg); border: 0.5px solid var(--sev-warn-line); border-left: 3px solid var(--sev-warn-accent); border-radius: 6px; padding: 8px 10px; line-height: 1.5; }
+
+    .row { display: flex; align-items: center; gap: 8px; }
+    .spacer { flex: 1; }
+    .dim { color: var(--color-text-tertiary); }
+    .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 6px 0; }
+
+    /* checkbox style */
+    .check { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--color-text-primary); cursor: pointer; user-select: none; }
+    .check input { width: 14px; height: 14px; accent-color: var(--brand-800); }
+
+    /* Main cycle collapse */
+    .main-cycle-toggle { width: 22px; height: 22px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: var(--brand-700); background: #fff; border: 0.5px solid var(--brand-100); cursor: pointer; flex-shrink: 0; transition: transform .2s var(--ease-out); }
+    .main-cycle-block.collapsed .main-cycle-toggle { transform: rotate(-90deg); }
+    .main-cycle-body { display: flex; flex-direction: column; gap: 12px; }
+    .main-cycle-block.collapsed .main-cycle-body { display: none; }
+    .main-cycle-summary { font-size: 11px; color: var(--color-text-secondary); margin-left: 30px; margin-top: -6px; margin-bottom: 8px; }
+    .main-cycle-block.collapsed .main-cycle-summary { margin-bottom: 0; }
+
+    /* Set time inline group */
+    .duration-group { display: flex; gap: 6px; }
+    .duration-group .input { flex: 1; min-width: 0; }
+    .duration-group .select { width: 86px; flex-shrink: 0; }
+
+    /* Empty state */
+    .empty-state { padding: 28px 20px; text-align: center; border: 1.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-lg); background: var(--brand-25); }
+    .empty-state .es-icon { width: 36px; height: 36px; border-radius: 50%; background: #fff; border: 0.5px solid var(--brand-100); margin: 0 auto 10px; display: inline-flex; align-items: center; justify-content: center; color: var(--brand-700); }
+    .empty-state h3 { font-size: 13px; font-weight: 600; color: var(--brand-900); margin-bottom: 4px; }
+    .empty-state p { font-size: 11.5px; color: var(--color-text-secondary); max-width: 380px; margin: 0 auto 14px; line-height: 1.5; }
+    .empty-state .row { justify-content: center; }
+
+    /* Tabs — top-level navigation in main column */
+    .tabs { display: flex; gap: 2px; padding: 4px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 16px; width: fit-content; }
+    .tab-btn { background: transparent; border: 0; padding: 7px 14px; font-size: 12.5px; font-weight: 500; color: var(--color-text-secondary); border-radius: 5px; cursor: pointer; font-family: var(--font-sans); transition: all .15s var(--ease-out); }
+    .tab-btn:hover:not(.active) { color: var(--brand-800); }
+    .tab-btn.active { background: #fff; color: var(--brand-900); box-shadow: var(--elev-1); }
+    .tab-panel { display: flex; flex-direction: column; gap: 16px; animation: fadeUp .2s var(--ease-out); }
+    .tab-panel.hidden { display: none; }
+
+    /* Sensor condition summary on phase card */
+    .cond-summary { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--color-background-secondary); border: 0.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-md); }
+    .cond-summary.configured { background: var(--brand-25); border: 0.5px solid var(--brand-100); border-style: solid; }
+    .cond-summary .cs-icon { width: 26px; height: 26px; border-radius: 6px; background: #fff; border: 0.5px solid var(--color-border-secondary); display: inline-flex; align-items: center; justify-content: center; color: var(--brand-700); flex-shrink: 0; }
+    .cond-summary.configured .cs-icon { background: var(--brand-50); border-color: var(--brand-200); }
+    .cond-summary .cs-body { flex: 1; min-width: 0; }
+    .cond-summary .cs-title { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+    .cond-summary .cs-desc { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cond-summary .cs-desc.empty { font-family: var(--font-sans); }
+    .cond-summary .cs-side { font-size: 9.5px; font-weight: 600; color: var(--brand-700); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+
+    /* Sensor: two-button (opening / closing) row */
+    .cond-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 720px) { .cond-pair { grid-template-columns: 1fr; } }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(14,31,54,.36); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 200; animation: fadeIn .18s var(--ease-out); padding: 20px; }
+    .modal-backdrop.open { display: flex; }
+    .modal-card { background: #fff; border-radius: 12px; border: 0.5px solid var(--color-border-secondary); box-shadow: var(--elev-3); width: 100%; max-width: 560px; max-height: 90vh; overflow: auto; animation: fadeUp .22s var(--ease-out); }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 12px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+    .modal-head h3 { font-size: 15px; font-weight: 600; color: var(--brand-900); letter-spacing: -.005em; }
+    .modal-head .sub { font-size: 11.5px; color: var(--color-text-secondary); margin-top: 4px; line-height: 1.45; }
+    .modal-close { width: 28px; height: 28px; border-radius: 6px; border: 0; background: transparent; color: var(--color-text-secondary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .modal-close:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+    .modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px 16px; border-top: 0.5px solid var(--color-border-tertiary); background: var(--brand-25); border-radius: 0 0 12px 12px; }
+
+    /* Add-step CTA under a cycle */
+    .add-step-cta { margin-top: 12px; padding: 10px 14px; border: 1px dashed var(--color-border-secondary); border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; background: transparent; font-family: var(--font-sans); width: 100%; transition: all .15s var(--ease-out); }
+    .add-step-cta:hover { background: var(--brand-25); color: var(--brand-800); border-color: var(--brand-200); }
+    .add-step-cta.empty { padding: 18px; font-size: 12.5px; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--brand-900); color: #fff; padding: 12px 16px; border-radius: 8px; font-size: 12.5px; box-shadow: var(--elev-3); display: flex; align-items: center; gap: 10px; opacity: 0; transform: translateY(8px); transition: all .22s var(--ease-out); pointer-events: none; z-index: 100; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast .ok { width: 16px; height: 16px; border-radius: 50%; background: #2ECC71; display: inline-flex; align-items: center; justify-content: center; color: var(--brand-900); font-weight: 700; font-size: 10px; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>UF Cycles · Configuration <span class="badge-internal">Internal</span></h1>
+        <div class="subtitle">Build cycles, decide what to track, choose where it appears.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn">Discard</button>
+        <button class="btn btn-primary" onclick="save()">Save configuration</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT: Asset list -->
+      <aside class="panel">
+        <div class="panel-title">Assets</div>
+        <div class="asset-list" id="assetList"></div>
+        <div class="divider" style="margin: 12px 0;"></div>
+        <div class="panel-title">Tracking</div>
+        <div style="font-size:11.5px; color:var(--color-text-secondary); line-height:1.5;">
+          Cycles are tracked <b>live</b> as they run. Each step opens and closes against its trigger and writes to its tag in real time.
+        </div>
+      </aside>
+
+      <!-- MAIN: tabbed config -->
+      <div class="main-col">
+        <!-- Asset summary (persistent across tabs) -->
+        <div class="section" id="assetSummary">
+          <div class="row">
+            <div style="min-width:0;">
+              <h2 id="assetTitle">UF · Ultrafiltration</h2>
+              <div class="hint" id="assetHint" style="margin-bottom:0;">Always automated. Configure backwash, forward flush and CEB cycles below.</div>
+            </div>
+            <div class="spacer"></div>
+            <span class="auto-pill auto" id="assetAuto">Automated</span>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-tab="cycles" role="tab">Cycles</button>
+          <button class="tab-btn" data-tab="display" role="tab">Display</button>
+        </div>
+
+        <!-- Cycles tab -->
+        <div class="tab-panel" data-panel="cycles">
+          <div class="section">
+            <div class="row" style="margin-bottom:14px;">
+              <div>
+                <h2>Cycles</h2>
+                <div class="hint" style="margin-bottom:0;">A cycle is made up of steps that run in order. Each cycle and each step gets its own time tag automatically.</div>
+              </div>
+              <div class="spacer"></div>
+              <button class="btn btn-sm btn-primary" onclick="addMain()">+ New cycle</button>
+            </div>
+            <div class="cycle-tree" id="cycleTree"></div>
+          </div>
+        </div>
+
+        <!-- Display tab -->
+        <div class="tab-panel hidden" data-panel="display">
+          <div class="section">
+            <h2>Where this appears</h2>
+            <div class="hint">Control how cycle tracking surfaces on the client visualization screens.</div>
+            <label class="check" style="margin-bottom:10px; display:flex;"><input type="checkbox" checked /> Show as "Filter Cycle" tab on visualization screen</label>
+            <label class="check" style="margin-bottom:10px; display:flex;"><input type="checkbox" checked /> Show label on equipment (double-click → cycle logs)</label>
+            <label class="check" style="display:flex;"><input type="checkbox" /> Add to plant-level page list dropdown</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sensor condition modal -->
+  <div class="modal-backdrop" id="sensorModal" onclick="if(event.target===this) closeSensorModal()">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div style="min-width:0;">
+          <h3>Sensor condition</h3>
+          <div class="sub" id="modalSubtitle">Set the start &amp; end conditions for this step. The next step begins automatically when the end condition is met.</div>
+        </div>
+        <button class="modal-close" onclick="closeSensorModal()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-foot">
+        <button class="btn btn-sm" onclick="closeSensorModal()">Cancel</button>
+        <button class="btn btn-sm btn-primary" onclick="saveSensorModal()">Save condition</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span class="ok">✓</span><span id="toastMsg">Configuration saved</span></div>
+
+  <script>
+    // ---------- State ----------
+    const ASSETS = [
+      { id: 'uf', name: 'UF · Ultrafiltration', meta: 'Always automated', mode: 'auto', enabled: true, hint: 'Always automated. Configure backwash, forward flush and CEB cycles below.' },
+    ];
+
+    const tagSafe = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+    function newPhase(name = 'New step', trigger = 'sensor', minutes = 10) {
+      return {
+        id: 'p_' + Math.random().toString(36).slice(2, 7),
+        name, trigger, setTime: minutes, setUnit: 'min',
+        // Sensor conditions — empty by default until user configures them via modal.
+        startCond:  { tag: '', op: '=', val: '' },
+        startCond2: { tag: '', op: '=', val: '' },
+        endCond:    { tag: '', op: '=', val: '' },
+        endCond2:   { tag: '', op: '=', val: '' },
+        condConfigured: false,
+        expanded: false
+      };
+    }
+
+    function condText(c) { return c && c.tag ? `${c.tag} ${c.op} ${c.val}` : null; }
+
+    function isSideConfigured(p, side) {
+      if (side === 'open')  return !!(p.startCond && p.startCond.tag) || !!(p.startCond2 && p.startCond2.tag);
+      if (side === 'close') return !!(p.endCond && p.endCond.tag)   || !!(p.endCond2 && p.endCond2.tag);
+      return false;
+    }
+
+    function condSideText(p, side) {
+      const a = side === 'open' ? p.startCond : p.endCond;
+      const b = side === 'open' ? p.startCond2 : p.endCond2;
+      const t = [condText(a), condText(b)].filter(Boolean).join(' & ');
+      return t || (side === 'open' ? 'Set when this step should begin.' : 'Set when this step should end.');
+    }
+
+    function isCondConfigured(p) { return isSideConfigured(p, 'open') || isSideConfigured(p, 'close'); }
+
+    function newMain(name = 'New cycle', phases = null) {
+      return { id: 'm_' + Math.random().toString(36).slice(2, 7), name, collapsed: false, phases: phases || [] };
+    }
+
+    let activeAsset = 'uf';
+    const state = {};
+    ASSETS.forEach(a => { state[a.id] = { mains: [] }; });
+
+    // ---------- Render ----------
+    function renderAssetList() {
+      const el = document.getElementById('assetList');
+      el.innerHTML = '';
+      ASSETS.forEach(a => {
+        const item = document.createElement('div');
+        item.className = 'asset-item' + (a.id === activeAsset ? ' active' : '') + (!a.enabled ? ' disabled' : '');
+        item.onclick = () => { activeAsset = a.id; renderAll(); };
+        item.innerHTML = `
+          <div>
+            <div class="asset-name">${a.name}</div>
+            <div class="asset-meta">${a.meta}</div>
+          </div>
+          <span class="auto-pill ${a.mode}">${a.mode === 'auto' ? 'Auto' : a.mode === 'cond' ? 'Cond.' : 'Off'}</span>`;
+        el.appendChild(item);
+      });
+    }
+
+    function renderAssetSummary() {
+      const a = ASSETS.find(x => x.id === activeAsset);
+      document.getElementById('assetTitle').textContent = a.name;
+      document.getElementById('assetHint').textContent = a.hint;
+      const pill = document.getElementById('assetAuto');
+      pill.className = 'auto-pill ' + a.mode;
+      pill.textContent = a.mode === 'auto' ? 'Automated' : 'Conditional';
+    }
+
+    function renderTree() {
+      const root = document.getElementById('cycleTree');
+      const s = state[activeAsset];
+      root.innerHTML = '';
+      if (!s.mains.length) {
+        root.innerHTML = `
+          <div class="empty-state">
+            <div class="es-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <h3>No cycles yet</h3>
+            <p>Build a cycle from scratch to get started. You can rename, add steps, and tweak triggers afterwards.</p>
+            <div class="row">
+              <button class="btn btn-primary" onclick="addMain()">+ New cycle</button>
+            </div>
+          </div>`;
+        return;
+      }
+      s.mains.forEach((m, mi) => {
+        const block = document.createElement('div');
+        block.className = 'main-cycle-block' + (m.collapsed ? ' collapsed' : '');
+        block.style.marginBottom = mi < s.mains.length - 1 ? '14px' : '0';
+        const stepsLabel = m.phases.length === 0 ? 'No steps yet' : (m.phases.length + ' step' + (m.phases.length === 1 ? '' : 's'));
+        block.innerHTML = `
+          <div class="main-cycle-header">
+            <button class="main-cycle-toggle" onclick="toggleMain('${m.id}')" aria-label="Collapse">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <span class="dot"></span>
+            <input class="input" style="background:#fff;" value="${m.name}" onchange="renameMain('${m.id}', this.value)" />
+            <button class="btn btn-sm btn-danger" onclick="removeMain('${m.id}')">Remove</button>
+          </div>
+          <div class="main-cycle-summary">${stepsLabel}${m.collapsed && m.phases.length ? ' · click to expand' : ''}</div>
+          <div class="main-cycle-body">
+            <div class="phases-container" id="phases-${m.id}"></div>
+          </div>`;
+        root.appendChild(block);
+        const pc = block.querySelector('#phases-' + m.id);
+        m.phases.forEach((p, pi) => pc.appendChild(renderPhase(m.id, p, pi)));
+      });
+    }
+
+    function renderAll() {
+      renderAssetList();
+      renderAssetSummary();
+      renderTree();
+    }
+
+    // ---------- Tabs ----------
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('hidden', p.dataset.panel !== target));
+      });
+    });
+
+    // ---------- Sensor condition modal ----------
+    // Holds a working copy of the conditions while the modal is open so user can cancel.
+    let modalCtx = null; // { mainId, phaseId, side, keys, draft }
+
+    function defaultIfEmpty(c, fallback) {
+      return (c && c.tag) ? { tag: c.tag, op: c.op || '=', val: c.val || '' } : { ...fallback };
+    }
+
+    function openSensorModal(mainId, phaseId, side /* 'open' | 'close' */) {
+      const [, p] = findPhase(mainId, phaseId);
+      if (!p) return;
+      const isOpen = side === 'open';
+      const k1 = isOpen ? 'startCond' : 'endCond';
+      const k2 = isOpen ? 'startCond2' : 'endCond2';
+      const fb1 = isOpen ? { tag: 'Valve1_ONOFF', op: '=', val: '1' } : { tag: 'Valve1_ONOFF', op: '=', val: '0' };
+      const fb2 = isOpen ? { tag: 'Valve2_ONOFF', op: '=', val: '0' } : { tag: 'Valve2_ONOFF', op: '=', val: '1' };
+      modalCtx = {
+        mainId, phaseId, side, keys: [k1, k2],
+        draft: { [k1]: defaultIfEmpty(p[k1], fb1), [k2]: defaultIfEmpty(p[k2], fb2) }
+      };
+      document.querySelector('#sensorModal .modal-head h3').textContent = isOpen ? 'Opening condition' : 'Closing condition';
+      document.getElementById('modalSubtitle').innerHTML = isOpen
+        ? `For step <b>${p.name}</b> · this is when the step begins.`
+        : `For step <b>${p.name}</b> · this is when the step ends. The next step begins automatically.`;
+      renderModalBody();
+      document.getElementById('sensorModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function renderModalBody() {
+      const d = modalCtx.draft, [k1, k2] = modalCtx.keys;
+      const isOpen = modalCtx.side === 'open';
+      const row = (key, c) => `
+        <div class="cond-row">
+          <div class="field"><label>Tag</label>
+            <input class="input mono" value="${c.tag}" placeholder="e.g. Valve1_ONOFF" data-key="${key}" data-prop="tag" oninput="onModalEdit(event)"/></div>
+          <div class="field"><label>Is</label>
+            <select class="select" data-key="${key}" data-prop="op" onchange="onModalEdit(event)">
+              ${['=', '!=', '>', '<', '>=', '<='].map(o => `<option ${o === c.op ? 'selected' : ''}>${o}</option>`).join('')}
+            </select></div>
+          <div class="field"><label>Value</label>
+            <input class="input mono" value="${c.val}" placeholder="0 / 1 / number" data-key="${key}" data-prop="val" oninput="onModalEdit(event)"/></div>
+        </div>`;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="cond-group">
+          <div class="cond-group-title">${isOpen ? 'Step opens when' : 'Step closes when'} <span class="pill">all true</span></div>
+          ${row(k1, d[k1])}
+          <div style="height:8px;"></div>
+          ${row(k2, d[k2])}
+        </div>
+        <div class="note">Tip: leave a row blank if you only need a single condition. ${isOpen
+          ? 'Example: <span style="font-family:var(--font-mono);">Valve1_ONOFF = 1 &amp; Valve2_ONOFF = 0</span>.'
+          : 'Example: <span style="font-family:var(--font-mono);">Valve1_ONOFF = 0 &amp; Valve2_ONOFF = 1</span>.'}</div>`;
+    }
+
+    window.onModalEdit = (e) => {
+      const k = e.target.dataset.key, prop = e.target.dataset.prop;
+      if (!k || !prop) return;
+      modalCtx.draft[k][prop] = e.target.value;
+    };
+
+    function closeSensorModal() {
+      document.getElementById('sensorModal').classList.remove('open');
+      document.body.style.overflow = '';
+      modalCtx = null;
+    }
+
+    function saveSensorModal() {
+      if (!modalCtx) return;
+      const [, p] = findPhase(modalCtx.mainId, modalCtx.phaseId);
+      if (!p) { closeSensorModal(); return; }
+      // Only write back the keys for the side currently open.
+      modalCtx.keys.forEach(k => { p[k] = modalCtx.draft[k]; });
+      const which = modalCtx.side === 'open' ? 'Opening' : 'Closing';
+      closeSensorModal();
+      renderTree();
+      toast(which + ' condition saved');
+    }
+
+    window.openSensorModal = openSensorModal;
+    window.closeSensorModal = closeSensorModal;
+    window.saveSensorModal = saveSensorModal;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const m = document.getElementById('sensorModal');
+        if (m && m.classList.contains('open')) closeSensorModal();
+      }
+    });
+
+    // ---------- Mutations ----------
+    function findPhase(mainId, phaseId) {
+      const m = state[activeAsset].mains.find(x => x.id === mainId);
+      return [m, m && m.phases.find(p => p.id === phaseId)];
+    }
+
+    window.togglePhase = (mid, pid) => { const [, p] = findPhase(mid, pid); p.expanded = !p.expanded; renderTree(); };
+    window.setTrigger  = (mid, pid, t) => { const [, p] = findPhase(mid, pid); p.trigger = t; renderTree(); };
+    window.updatePhase = (mid, pid, k, v) => { const [, p] = findPhase(mid, pid); p[k] = v; renderTree(); };
+    window.renamePhase = (mid, pid, n) => { const [, p] = findPhase(mid, pid); p.name = n || 'Untitled step'; renderTree(); };
+    window.removePhase = (mid, pid) => {
+      const m = state[activeAsset].mains.find(x => x.id === mid);
+      m.phases = m.phases.filter(p => p.id !== pid);
+      renderTree();
+    };
+    window.renameMain = (mid, n) => {
+      const m = state[activeAsset].mains.find(x => x.id === mid);
+      m.name = n || 'Untitled cycle';
+      renderTree();
+    };
+    window.removeMain = (mid) => {
+      state[activeAsset].mains = state[activeAsset].mains.filter(x => x.id !== mid);
+      renderTree();
+    };
+    window.addMain = () => {
+      const np = newPhase('Step 1', 'sensor', 10);
+      np.expanded = true;
+      const m = newMain('Cycle ' + (state[activeAsset].mains.length + 1), [np]);
+      m.collapsed = false;
+      state[activeAsset].mains.push(m);
+      renderTree();
+    };
+    window.toggleMain = (mid) => {
+      const m = state[activeAsset].mains.find(x => x.id === mid);
+      m.collapsed = !m.collapsed;
+      renderTree();
+    };
+
+    function save() {
+      toast('Configuration saved · '
+        + Object.values(state).reduce((n, a) => n + a.mains.length, 0) + ' main cycles · '
+        + Object.values(state).reduce((n, a) => n + a.mains.reduce((m, mc) => m + mc.phases.length, 0), 0) + ' phases');
+    }
+
+    function toast(m) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = m;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    window.save = save;
+
+    renderAll();
+  </script>
+</body>
+</html>
